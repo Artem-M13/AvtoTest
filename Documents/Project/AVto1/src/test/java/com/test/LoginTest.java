@@ -1,52 +1,70 @@
 package com.test;
 
-import org.junit.jupiter.api.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.testng.Assert;
+import org.testng.annotations.AfterMethod;
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
+import org.testng.asserts.SoftAssert;
+import pages.LoginPage;
 
 public class LoginTest extends BaseTest {
+    private WebDriver driver;
+    private LoginPage loginPage;
+
+    @BeforeMethod
+    public void setUp() {
+        // Налаштування драйвера і відкриття браузера
+        WebDriverManager.chromedriver().setup();
+        driver = new ChromeDriver();
+        driver.manage().window().maximize();
+
+        // Перехід на сайт
+        driver.get("https://www.saucedemo.com/");
+
+        // Ініціалізація Page Object
+        loginPage = new LoginPage(driver);
+    }
+
+    @AfterMethod(alwaysRun = true)
+    public void tearDown() {
+        if (driver != null) driver.quit();
+    }
 
     @Test
-    public void testLoginPageElements() {
-              // Перевірка елементів логіну
-        try {
-            WebElement usernameField = driver.findElement(By.id("user-name"));
-            System.out.println("Поле логіну знайдено.");
+    public void verifyPageTitle() {
+        String actualTitle = driver.getTitle();
 
-            WebElement passwordField = driver.findElement(By.id("password"));
-            System.out.println("Поле паролю знайдено.");
+        // Жорстка перевірка на повний збіг
+        Assert.assertEquals(actualTitle, "Swag Labs", "Назва сторінки не співпадає!");
 
-            WebElement loginButton = driver.findElement(By.id("login-button"));
-            System.out.println("Кнопка логіну знайдена.");
-        } catch (Exception e) {
-            System.out.println("Помилка при пошуку елементів: " + e.getMessage());
-        }
-                // Перевірка заголовка сторінки
-        String pageTitle = driver.getTitle();
-        if (pageTitle.contains("Swag Labs")) {
-            System.out.println("Заголовок сторінки містить 'Swag Labs'.");
-        } else {
-            System.out.println("Заголовок сторінки НЕ містить 'Swag Labs'. Заголовок: " + pageTitle);
-        }
-            try {
-                // Перевірка елемента за ID
-                WebElement usernameField = driver.findElement(By.id("user-name"));
-                System.out.println("Елемент з ID 'user-name' знайдено.");
-
-                // Перевірка елемента за ClassName
-                WebElement loginBox = driver.findElement(By.className("login-box"));
-                System.out.println("Елемент з ClassName 'login-box' знайдено.");
-
-                // Перевірка елемента за XPath
-                WebElement loginButton = driver.findElement(By.xpath("//input[@id='login-button']"));
-                System.out.println("Елемент з XPath '//input[@id='login-button']' знайдено.");
-
-                // Перевірка елемента за CSS Selector
-                WebElement passwordField = driver.findElement(By.cssSelector("input[data-test='password']"));
-                System.out.println("Елемент з CSS Selector 'input[data-test=\"password\"]' знайдено.");
-
-            } catch (Exception e) {
-                System.out.println("Помилка при пошуку елементів: " + e.getMessage());
-            }
-        }
+        // М’яка перевірка
+        SoftAssert soft = new SoftAssert();
+        soft.assertTrue(actualTitle.contains("Swag Labs"), "Заголовок не містить 'Swag Labs'");
+        soft.assertAll(); // обов’язково викликати!
     }
+
+    @DataProvider(name = "loginData")
+    public Object[][] loginDataProvider() {
+        return new Object[][]{
+                {"standard_user", "secret_sauce"},
+                {"locked_out_user", "secret_sauce"},
+                {"problem_user", "secret_sauce"},
+                {"performance_glitch_user", "secret_sauce"}
+        };
+    }
+
+    @Test(dataProvider = "loginData")
+    public void testLoginWithMultipleCredentials(String username, String password) {
+        loginPage.enterUsername(username);
+        loginPage.enterPassword(password);
+
+        System.out.println("Введено логін: " + username + " | пароль: " + password);
+
+        // поки що без кліку на кнопку
+        // loginPage.clickLoginButton();
+    }
+}
