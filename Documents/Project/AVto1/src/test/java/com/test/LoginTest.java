@@ -28,25 +28,17 @@ public class LoginTest extends BaseTest {
         // Ініціалізація Page Object
         loginPage = new LoginPage(driver);
     }
-
     @AfterMethod(alwaysRun = true)
     public void tearDown() {
         if (driver != null) driver.quit();
     }
-
     @Test
     public void verifyPageTitle() {
         String actualTitle = driver.getTitle();
 
         // Жорстка перевірка на повний збіг
         Assert.assertEquals(actualTitle, "Swag Labs", "Назва сторінки не співпадає!");
-
-        // М’яка перевірка
-        SoftAssert soft = new SoftAssert();
-        soft.assertTrue(actualTitle.contains("Swag Labs"), "Заголовок не містить 'Swag Labs'");
-        soft.assertAll(); // обов’язково викликати!
     }
-
     @DataProvider(name = "loginData")
     public Object[][] loginDataProvider() {
         return new Object[][]{
@@ -56,7 +48,6 @@ public class LoginTest extends BaseTest {
                 {"performance_glitch_user", "secret_sauce"}
         };
     }
-
     @Test(dataProvider = "loginData")
     public void testLoginWithMultipleCredentials(String username, String password) {
         loginPage.enterUsername(username);
@@ -64,7 +55,7 @@ public class LoginTest extends BaseTest {
 
         System.out.println("Введено логін: " + username + " | пароль: " + password);
 
-        // поки що без кліку на кнопку
-        // loginPage.clickLoginButton();
+       // клік на кнопку
+         loginPage.clickLoginButton();
     }
 }
