@@ -21,7 +21,7 @@ public class ApiTests {
 
         String petJson = """
                 {
-                  "id": 666,
+                  "id": 5,
                   "name": "Barsik",
                   "status": "available"
                 }
@@ -39,7 +39,7 @@ public class ApiTests {
         // GET – перевірка
         Response response = RestAssured.given()
                 .when()
-                .get("/pet/666")
+                .get("/pet/5")
                 .then()
                 .extract()
                 .response();
@@ -47,7 +47,7 @@ public class ApiTests {
         Assert.assertEquals(response.getStatusCode(), 200, "Статус код не 200!");
         Assert.assertTrue(response.asString().contains("Barsik"), "Ім'я Barsik не знайдено!");
 
-        Allure.addAttachment("GET /pet/666 response", "application/json",
+        Allure.addAttachment("GET /pet/5 response", "application/json",
                 response.asPrettyString(), ".json");
     }
 }
