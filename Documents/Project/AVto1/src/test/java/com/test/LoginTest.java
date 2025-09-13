@@ -1,44 +1,44 @@
 package com.test;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
+import io.qameta.allure.*;
 import org.testng.Assert;
-import org.testng.annotations.AfterMethod;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Test;
+import org.testng.annotations.*;
 import org.testng.asserts.SoftAssert;
 import pages.LoginPage;
 
-public class LoginTest extends BaseTest {
-    private WebDriver driver;
+@Listeners({io.qameta.allure.testng.AllureTestNg.class})
+@Epic("E2E Web UI")
+@Feature("Авторизація (SauceDemo)")
+class LoginTests extends BaseTest  {
+
     private LoginPage loginPage;
 
     @BeforeMethod
-    public void setUp() {
-        // Налаштування драйвера і відкриття браузера
-        WebDriverManager.chromedriver().setup();
-        driver = new ChromeDriver();
+    public void openApp() {
         driver.manage().window().maximize();
-
-        // Перехід на сайт
         driver.get("https://www.saucedemo.com/");
-
-        // Ініціалізація Page Object
         loginPage = new LoginPage(driver);
     }
-    @AfterMethod(alwaysRun = true)
-    public void tearDown() {
-        if (driver != null) driver.quit();
-    }
-    @Test
-    public void verifyPageTitle() {
-        String actualTitle = driver.getTitle();
 
-        // Жорстка перевірка на повний збіг
-        Assert.assertEquals(actualTitle, "Swag Labs", "Назва сторінки не співпадає!");
+    // ⬇️ НЕ потрібно, якщо в BaseTest уже є @AfterMethod із quit()
+    // @AfterMethod(alwaysRun = true)
+    // public void closeApp() { if (driver != null) driver.quit(); }
+
+    @Test(description = "Перевірка заголовку сторінки")
+    @Story("Відкриття сторінки логіну")
+    @Severity(SeverityLevel.NORMAL)
+    @Description("Перевіряємо, що title дорівнює 'Swag Labs' і містить цей текст.")
+    public void verifyPageTitle() {
+        String title = driver.getTitle();
+        Assert.assertEquals(title, "Swag Labs", "Назва сторінки не співпадає!");
+        Assert.assertTrue(title.contains("Swag Labs"), "Заголовок не містить 'Swag Labs'");
+
+        SoftAssert sa = new SoftAssert();
+        sa.assertTrue(driver.getPageSource().contains("Username"), "Немає тексту 'Username'");
+        sa.assertTrue(driver.getPageSource().contains("Password"), "Немає тексту 'Password'");
+        sa.assertAll();
     }
+
     @DataProvider(name = "loginData")
     public Object[][] loginDataProvider() {
         return new Object[][]{
@@ -48,14 +48,16 @@ public class LoginTest extends BaseTest {
                 {"performance_glitch_user", "secret_sauce"}
         };
     }
-    @Test(dataProvider = "loginData")
+
+    @Test(dataProvider = "loginData",
+            description = "Ввід логіну/паролю та клік Login (без перевірки авторизації)")
+    @Story("Ввід облікових даних")
+    @Severity(SeverityLevel.MINOR)
+    @Description("Для кожної пари вводимо логін/пароль та натискаємо 'Login'.")
     public void testLoginWithMultipleCredentials(String username, String password) {
         loginPage.enterUsername(username);
         loginPage.enterPassword(password);
-
         System.out.println("Введено логін: " + username + " | пароль: " + password);
-
-       // клік на кнопку
-         loginPage.clickLoginButton();
+        loginPage.clickLogin(); // переконайся, що саме така назва методу у LoginPage
     }
 }
